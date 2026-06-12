@@ -1,0 +1,27 @@
+{
+	Tools = ordered() {
+		TextPlus1 = TextPlus {
+			Inputs = {
+				Width = Input { Value = 1920, },
+				Height = Input { Value = 1080, },
+				Depth = Input { Value = 1, },
+				StyledText = Input { Value = "Highlight", },
+				Font = Input { Value = "Open Sans", },
+				Style = Input { Value = "Bold", },
+				Size = Input { Value = 0.08, },
+				HorizontalAnchor = Input { Value = 0.5, },
+				VerticalAnchor = Input { Value = 1, },
+				HorizontalPosition = Input { Value = 0.5, },
+				VerticalPosition = Input { Value = 0.1, },
+				Red1 = Input { Value = 1.0, },
+				Green1 = Input { Value = 0.85, },
+				Blue1 = Input { Value = 0.0, },
+				ShadowBlur = Input { Value = 0.006, },
+				ShadowOffsetX = Input { Value = 0.002, },
+				ShadowOffsetY = Input { Value = -0.002, },
+				ShadowAlpha = Input { Value = 1.0, },
+				LineSpacing = Input { Value = 1.1, },
+			},
+		}
+	},
+}
