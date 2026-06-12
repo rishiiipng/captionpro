@@ -127,7 +127,7 @@ If anything goes wrong, the plugin writes log files to:
 
 1. Open `build.log` (or `startup.log` if the panel never opened)
 2. Copy the contents
-3. Email to: **aniket.bhattacharjee@gmail.com** with:
+3. Email to: **deyayush599@gmail.com** with:
    - The log file attached
    - What you were doing when it broke
    - Your Resolve version (**Help → About DaVinci Resolve**)
