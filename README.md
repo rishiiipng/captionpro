@@ -45,9 +45,15 @@ CaptionPro reads your existing subtitle track and converts every clip into a
    - Verify every file was placed correctly
    - Print a success summary with the next steps
 
-> If Windows blocks the script, run this first in PowerShell:
+> **If Windows says the script "cannot be loaded" or "is not digitally signed":**  
+> Run this once in PowerShell from the folder where you extracted the zip:
 > ```powershell
-> Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+> Unblock-File -Path .\install.ps1
+> .\install.ps1
+> ```
+> This unblocks only this file without changing any system settings. If that still fails:
+> ```powershell
+> powershell -ExecutionPolicy Bypass -File .\install.ps1
 > ```
 
 ### Option B — Manual install
