@@ -87,13 +87,37 @@ Copy the following to your Resolve `Scripts` folder
 
 ### Using the included macros
 
-After installation, the two bundled macros are at:
+CaptionPro ships with a set of ready-made animation macros so you can get
+started without building your own. You're never limited to these — point the
+Browse fields at **any** Fusion `.setting` macro you like.
+
+After installation, the bundled macros are at:
 ```
 %APPDATA%\Blackmagic Design\DaVinci Resolve\Support\Fusion\Scripts\CaptionPro_macros\
-  highlight.setting   ← bold yellow text, bottom-centre
-  normal.setting      ← regular white text, bottom-centre
 ```
-Paste those paths into the Browse fields, or use your own Fusion macros.
+
+| Macro | Animation |
+|---|---|
+| `PopUp` | Scales/pops each line in |
+| `Bounce` | Bouncy entrance |
+| `Flicker` | Flickers on |
+| `Scramble` | Letters scramble into place |
+| `ColourFill` | Colour fills across the text |
+| `crumbleUp_txt` | Text crumbles upward |
+| `elasticLetters` | Elastic per-letter motion |
+| `ElasticSlideUp` | Elastic slide from below |
+| `ElasticSlideDown` | Elastic slide from above |
+| `ElasticSlideLeft` | Elastic slide from the right |
+| `ElasticSlideRight` | Elastic slide from the left |
+| `SqueezeIn` | Squeezes in |
+| `SqueezeOut` | Squeezes out |
+
+Browse to any of these in the panel — or use your own Fusion macros.
+
+> **First-time use note:** CaptionPro installs the macro you pick as a Fusion
+> **Title template** the first time you select it. When that happens it asks you
+> to **restart DaVinci Resolve once**, then run CaptionPro again. This is a
+> one-time step per macro — after the restart it just works.
 
 ### Creating your own macros
 
@@ -146,9 +170,11 @@ If anything goes wrong, the plugin writes log files to:
 CaptionPro_Lua/
 ├── install.ps1                    ← Interactive Windows installer
 ├── README.md
-├── macros/
-│   ├── highlight.setting          ← Bold yellow macro (bundled)
-│   └── normal.setting             ← Regular white macro (bundled)
+├── macros/                        ← Bundled animation macros (.setting)
+│   ├── PopUp.setting
+│   ├── Bounce.setting
+│   ├── ElasticSlideUp.setting
+│   └── ... (and more)
 └── src/
     ├── main.lua                   ← Entry point (copied to Comp/CaptionPro.lua)
     ├── core/

@@ -1,0 +1,83 @@
+{
+	Tools = ordered() {
+		VortyXScramble = GroupOperator {
+			Outputs = {
+				Output1 = InstanceOutput {
+					SourceOp = "TextScramble1Randomness",
+					Source = "Value",
+				},
+				MainOutput1 = InstanceOutput {
+					SourceOp = "Glow1",
+					Source = "Output",
+				}
+			},
+			ViewInfo = GroupInfo { Pos = { 0, 0 } },
+			Tools = ordered() {
+				Text1 = TextPlus {
+					Inputs = {
+						MotionBlur = Input { Value = 1, },
+						Quality = Input { Value = 10, },
+						ShutterAngle = Input { Value = 360, },
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						Wrap = Input { Value = 1, },
+						LayoutRotation = Input { Value = 1, },
+						TransformRotation = Input { Value = 1, },
+						Softness1 = Input { Value = 1, },
+						StyledText = Input {
+							SourceOp = "TextScramble1",
+							Source = "ScrambledText",
+						},
+						Font = Input { Value = "SF Pro Display", },
+						Style = Input { Value = "Bold", },
+						Size = Input { Value = 0.1024, },
+						VerticalJustificationNew = Input { Value = 3, },
+						HorizontalJustificationNew = Input { Value = 3, }
+					},
+					ViewInfo = OperatorInfo { Pos = { 250, -66.5758 } },
+				},
+				TextScramble1 = TextScramble {
+					CtrlWZoom = false,
+					Inputs = {
+						InputText = Input {
+							Value = StyledText {
+								Value = "Scramble"
+							},
+						},
+						Randomness = Input {
+							SourceOp = "TextScramble1Randomness",
+							Source = "Value",
+						},
+						SubstituteChars = Input { Value = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", }
+					},
+				},
+				TextScramble1Randomness = BezierSpline {
+					SplineColor = { Red = 239, Green = 49, Blue = 185 },
+					CtrlWZoom = false,
+					NameSet = true,
+					KeyFrames = {
+						[0] = { 1.087, RH = { 5, 0.724666666666667 }, Flags = { Linear = true } },
+						[15] = { 0, LH = { 10, 0.362333333333333 }, Flags = { Linear = true } }
+					}
+				},
+				Glow1 = Glow {
+					CtrlWZoom = false,
+					Inputs = {
+						Blend = Input { Value = 0.2, },
+						Filter = Input { Value = FuID { "Fast Gaussian" }, },
+						XGlowSize = Input { Value = 21.3, },
+						Glow = Input { Value = 0.638, },
+						Input = Input {
+							SourceOp = "Text1",
+							Source = "Output",
+						}
+					},
+					ViewInfo = OperatorInfo { Pos = { 250, -33.5758 } },
+				}
+			},
+		}
+	},
+	ActiveTool = "VortyXScramble"
+}

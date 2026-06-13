@@ -1,0 +1,135 @@
+{
+	Tools = ordered() {
+		VortyXelasticLetters = GroupOperator {
+			Outputs = {
+				MainOutput1 = InstanceOutput {
+					SourceOp = "DropShadow1_1",
+					Source = "Output",
+				}
+			},
+			ViewInfo = GroupInfo { Pos = { 0, 0 } },
+			Tools = ordered() {
+				Template = TextPlus {
+					Inputs = {
+						MotionBlur = Input { Value = 1, },
+						Quality = Input { Value = 10, },
+						ShutterAngle = Input { Value = 360, },
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						TransformRotation = Input { Value = 1, },
+						StyledText = Input {
+							SourceOp = "Follower1",
+							Source = "StyledText",
+						},
+						Font = Input { Value = "SF Pro Display", },
+						Style = Input { Value = "Bold", },
+						Size = Input { Value = 0.09, },
+						VerticalJustificationNew = Input { Value = 3, },
+						HorizontalJustificationNew = Input { Value = 3, }
+					},
+					ViewInfo = OperatorInfo { Pos = { 340, -64.4396 } },
+				},
+				Follower1 = StyledTextFollower {
+					CtrlWZoom = false,
+					Inputs = {
+						Order = Input { Value = 7, },
+						Delay = Input { Value = 1.2, },
+						Text = Input {
+							Value = StyledText {
+								Value = "Elastic Letters"
+							},
+						},
+						Size = Input {
+							SourceOp = "Follower1Size",
+							Source = "Value",
+						},
+						TransformRotation = Input { Value = 1, },
+						CharacterAngleZ = Input {
+							SourceOp = "Follower1CharacterAngleZ",
+							Source = "Value",
+						},
+						Opacity1 = Input {
+							SourceOp = "Follower1Opacity1",
+							Source = "Value",
+						},
+						Softness1 = Input { Value = 1, },
+						Softness2 = Input { Value = 1, },
+						Softness3 = Input { Value = 1, },
+						Softness4 = Input { Value = 1, },
+						Softness5 = Input { Value = 1, },
+						Softness6 = Input { Value = 1, },
+						Softness7 = Input { Value = 1, },
+						Softness8 = Input { Value = 1, }
+					},
+				},
+				Follower1Size = BezierSpline {
+					SplineColor = { Red = 225, Green = 0, Blue = 157 },
+					CtrlWZoom = false,
+					KeyFrames = {
+						[0] = { 0, RH = { 4.999995, 0.08 }, Flags = { Linear = true } },
+						[15] = { 0.08, LH = { 10.000005, 0.08 } }
+					}
+				},
+				Follower1CharacterAngleZ = BezierSpline {
+					SplineColor = { Red = 28, Green = 216, Blue = 243 },
+					CtrlWZoom = false,
+					KeyFrames = {
+						[0] = { 90, RH = { 5.666661, -90 }, Flags = { Linear = true } },
+						[17] = { 0, LH = { 11.333339, 0 } }
+					}
+				},
+				Follower1Opacity1 = BezierSpline {
+					SplineColor = { Red = 244, Green = 28, Blue = 244 },
+					CtrlWZoom = false,
+					KeyFrames = {
+						[0] = { 0, RH = { 3.33333, 2 }, Flags = { Linear = true } },
+						[10] = { 1, LH = { 6.66667, 1 } }
+					}
+				},
+				Glow1_1 = Glow {
+					CtrlWZoom = false,
+					Inputs = {
+						Blend = Input { Value = 0.244, },
+						Filter = Input { Value = FuID { "Fast Gaussian" }, },
+						XGlowSize = Input { Value = 22, },
+						Glow = Input { Value = 0.472, },
+						Input = Input {
+							SourceOp = "Template",
+							Source = "Output",
+						}
+					},
+					ViewInfo = OperatorInfo { Pos = { 340.001, -20.5151 } },
+				},
+				DropShadow1_1 = ofx.com.blackmagicdesign.resolvefx.DropShadow {
+					Inputs = {
+						Source = Input {
+							SourceOp = "Glow1_1",
+							Source = "Output",
+						},
+						shadowStrength = Input { Value = 0.5, },
+						shadowAngle = Input { Value = 37.5, },
+						ShadowDistance = Input { Value = 0.0500000007450581, },
+						shadowBlur = Input { Value = 0.409, },
+						shadowColorRed = Input { Value = 0, },
+						shadowColorGreen = Input { Value = 0, },
+						shadowColorBlue = Input { Value = 0, },
+						isLegacyComp = Input { Value = 0, },
+						blendGroup = Input { Value = 0, },
+						blendIn = Input { Value = 1, },
+						blend = Input { Value = 0, },
+						ignoreContentShape = Input { Value = 0, },
+						legacyIsProcessRGBOnly = Input { Value = 0, },
+						IsNoTemporalFramesReqd = Input { Value = 0, },
+						refreshTrigger = Input { Value = 1, },
+						srcProcessingAlphaMode = Input { Value = 2, },
+						dstProcessingAlphaMode = Input { Value = 2, },
+						resolvefxVersion = Input { Value = "2.0", }
+					},
+					ViewInfo = OperatorInfo { Pos = { 354.667, 27.9698 } },
+				}
+			},
+		}
+	},
+	ActiveTool = "VortyXelasticLetters"
+}

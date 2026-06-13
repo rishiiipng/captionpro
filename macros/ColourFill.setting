@@ -1,0 +1,144 @@
+{
+	Tools = ordered() {
+		VortyXColourFill = GroupOperator {
+			Outputs = {
+				Output1 = InstanceOutput {
+					SourceOp = "Path1",
+					Source = "Heading",
+				},
+				Output2 = InstanceOutput {
+					SourceOp = "Path2",
+					Source = "Heading",
+				},
+				MainOutput1 = InstanceOutput {
+					SourceOp = "Glow1",
+					Source = "Output",
+				}
+			},
+			ViewInfo = GroupInfo { Pos = { 0, 0 } },
+			Tools = ordered() {
+				Text1 = TextPlus {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						Wrap = Input { Value = 1, },
+						LayoutRotation = Input { Value = 1, },
+						TransformRotation = Input { Value = 1, },
+						Softness1 = Input { Value = 1, },
+						StyledText = Input { Value = "ColourFill", },
+						Font = Input { Value = "SF Pro Display", },
+						Style = Input { Value = "Bold", },
+						Size = Input { Value = 0.1102, },
+						VerticalJustificationNew = Input { Value = 3, },
+						HorizontalJustificationNew = Input { Value = 3, }
+					},
+					ViewInfo = OperatorInfo { Pos = { 179.677, -73.7003 } },
+				},
+				Background2 = Background {
+					Inputs = {
+						EffectMask = Input {
+							SourceOp = "Text1",
+							Source = "Output",
+						},
+						MotionBlur = Input { Value = 1, },
+						Quality = Input { Value = 10, },
+						ShutterAngle = Input { Value = 360, },
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						Type = Input { Value = FuID { "Gradient" }, },
+						TopLeftRed = Input { Value = 1, },
+						TopLeftGreen = Input { Value = 1, },
+						TopLeftBlue = Input { Value = 1, },
+						Start = Input {
+							SourceOp = "Path1",
+							Source = "Position",
+						},
+						End = Input {
+							SourceOp = "Path2",
+							Source = "Position",
+						},
+						Gradient = Input {
+							Value = Gradient {
+								Colors = {
+									[0] = { 0.16078431372549, 0.537254901960784, 0.996078431372549, 1 },
+									[1] = { 1, 1, 1, 1 }
+								}
+							},
+						}
+					},
+					ViewInfo = OperatorInfo { Pos = { 181.563, -33.8467 } },
+				},
+				Path1 = PolyPath {
+					DrawMode = "InsertAndModify",
+					CtrlWZoom = false,
+					Inputs = {
+						Displacement = Input {
+							SourceOp = "Path1Displacement",
+							Source = "Value",
+						},
+						PolyLine = Input {
+							Value = Polyline {
+								Points = {
+									{ Linear = true, LockY = true, X = -0.189967105263158, Y = -0.00438596491228072, RX = 0.130375239660367, RY = 1.85037170770859e-17 },
+									{ Linear = true, LockY = true, X = 0.201158613717943, Y = -0.00438596491228066, LX = -0.130375239660367, LY = -1.85037170770859e-17 }
+								}
+							},
+						}
+					},
+				},
+				Path1Displacement = BezierSpline {
+					SplineColor = { Red = 255, Green = 0, Blue = 255 },
+					CtrlWZoom = false,
+					KeyFrames = {
+						[15] = { 0, RH = { 24.99999, 1 }, Flags = { LockedY = true } },
+						[45] = { 1, LH = { 35.00001, 1 }, Flags = { LockedY = true } }
+					}
+				},
+				Path2 = PolyPath {
+					DrawMode = "InsertAndModify",
+					CtrlWZoom = false,
+					Inputs = {
+						Displacement = Input {
+							SourceOp = "Path2Displacement",
+							Source = "Value",
+						},
+						PolyLine = Input {
+							Value = Polyline {
+								Points = {
+									{ Linear = true, LockY = true, X = -0.167441860465116, Y = -0.00413223140495866, RX = 0.124623390851821, RY = -1.85037170770859e-17 },
+									{ Linear = true, LockY = true, X = 0.206428312090348, Y = -0.00413223140495872, LX = -0.124623390851821, LY = 1.85037170770859e-17 }
+								}
+							},
+						}
+					},
+				},
+				Path2Displacement = BezierSpline {
+					SplineColor = { Red = 255, Green = 0, Blue = 178 },
+					CtrlWZoom = false,
+					KeyFrames = {
+						[15] = { 0, RH = { 24.99999, 1 }, Flags = { LockedY = true } },
+						[45] = { 1, LH = { 35.00001, 1 }, Flags = { LockedY = true } }
+					}
+				},
+				Glow1 = Glow {
+					CtrlWZoom = false,
+					Inputs = {
+						Blend = Input { Value = 0.2, },
+						Filter = Input { Value = FuID { "Fast Gaussian" }, },
+						Glow = Input { Value = 0.756, },
+						Input = Input {
+							SourceOp = "Background2",
+							Source = "Output",
+						}
+					},
+					ViewInfo = OperatorInfo { Pos = { 181.563, -0.846714 } },
+				}
+			},
+		}
+	},
+	ActiveTool = "VortyXColourFill"
+}

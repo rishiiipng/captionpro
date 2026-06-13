@@ -357,8 +357,6 @@ $checks = [ordered]@{
   "Module: highlight_analyzer"        = Join-Path $modules_dst "core\highlight_analyzer.lua"
   "Module: workflow"                  = Join-Path $modules_dst "core\workflow.lua"
   "Module: panel (UI)"                = Join-Path $modules_dst "ui\panel.lua"
-  "Macro: highlight.setting"          = Join-Path $macros_dst  "highlight.setting"
-  "Macro: normal.setting"             = Join-Path $macros_dst  "normal.setting"
 }
 
 foreach ($name in $checks.Keys) {
@@ -370,6 +368,20 @@ foreach ($name in $checks.Keys) {
     $verify_ok = $false
     Write-Log "Verify FAILED: $path" "FAIL"
   }
+}
+
+# Bundled macros: verify at least one .setting landed (names are not hardcoded)
+$macro_count = 0
+if (Test-Path $macros_dst) {
+  $macro_count = (Get-ChildItem -Path $macros_dst -Filter "*.setting" -ErrorAction SilentlyContinue |
+                  Measure-Object).Count
+}
+if ($macro_count -gt 0) {
+  Write-Ok "Bundled macros ($macro_count .setting file(s))"
+} else {
+  Write-Fail "Bundled macros  [MISSING: no .setting files in $macros_dst]"
+  $verify_ok = $false
+  Write-Log "Verify FAILED: no macros in $macros_dst" "FAIL"
 }
 
 # ==============================================================================
@@ -390,9 +402,9 @@ if ($verify_ok -and $errors.Count -eq 0) {
   Write-Host "    2. Open a project that has a subtitle track" -ForegroundColor Gray
   Write-Host "    3. Workspace > Scripts > Comp > CaptionPro" -ForegroundColor Gray
   Write-Host ""
-  Write-Host "  Default macro paths:" -ForegroundColor White
-  Write-Host "    Highlight : $macros_dst\highlight.setting" -ForegroundColor DarkGray
-  Write-Host "    Normal    : $macros_dst\normal.setting" -ForegroundColor DarkGray
+  Write-Host "  Bundled macros are in:" -ForegroundColor White
+  Write-Host "    $macros_dst" -ForegroundColor DarkGray
+  Write-Host "  Browse to any .setting there in the panel, or use your own." -ForegroundColor DarkGray
   Write-Host ""
   Write-Host "  Install log: $LogFile" -ForegroundColor DarkGray
   Write-Log "Installation completed successfully. $copied file(s) copied."

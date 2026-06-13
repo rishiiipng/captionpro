@@ -1,0 +1,131 @@
+{
+	Tools = ordered() {
+		VortyXFlicker = GroupOperator {
+			Outputs = {
+				MainOutput1 = InstanceOutput {
+					SourceOp = "Glow1_1_1",
+					Source = "Output",
+				}
+			},
+			ViewInfo = GroupInfo { Pos = { 0, 0 } },
+			Tools = ordered() {
+				Text1 = TextPlus {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						Wrap = Input { Value = 1, },
+						LayoutRotation = Input { Value = 1, },
+						TransformRotation = Input { Value = 1, },
+						SelectElement = Input { Value = 1, },
+						Select = Input { Value = 1, },
+						Enabled2 = Input { Value = 1, },
+						Softness1 = Input { Value = 1, },
+						StyledText = Input {
+							SourceOp = "Follower1",
+							Source = "StyledText",
+						},
+						Font = Input { Value = "Poppins", },
+						Style = Input { Value = "ExtraBold", },
+						Size = Input { Value = 0.1457, },
+						VerticalJustificationNew = Input { Value = 3, },
+						HorizontalJustificationNew = Input { Value = 3, },
+						Thickness2 = Input { Value = 0.005, },
+						Green2 = Input { Value = 1, },
+						Blue2 = Input { Value = 1, },
+						Softness2 = Input { Value = 1, }
+					},
+					ViewInfo = OperatorInfo { Pos = { 140.667, -32.6364 } },
+				},
+				Follower1 = StyledTextFollower {
+					CtrlWZoom = false,
+					Inputs = {
+						Order = Input { Value = 4, },
+						Delay = Input { Value = 4, },
+						Text = Input {
+							Value = StyledText {
+								Value = "FLICKER"
+							},
+						},
+						TransformRotation = Input { Value = 1, },
+						SelectElement = Input { Value = 1, },
+						Opacity1 = Input {
+							SourceOp = "Follower1Opacity1",
+							Source = "Value",
+						},
+						Softness1 = Input { Value = 1, },
+						Opacity2 = Input {
+							SourceOp = "Follower1Opacity2",
+							Source = "Value",
+						},
+						Softness2 = Input { Value = 1, },
+						Softness3 = Input { Value = 1, },
+						Softness4 = Input { Value = 1, },
+						Softness5 = Input { Value = 1, },
+						Softness6 = Input { Value = 1, },
+						Softness7 = Input { Value = 1, },
+						Softness8 = Input { Value = 1, }
+					},
+				},
+				Follower1Opacity1 = BezierSpline {
+					SplineColor = { Red = 179, Green = 28, Blue = 244 },
+					CtrlWZoom = false,
+					KeyFrames = {
+						[3.05770209981571] = { 0, RH = { 3.05770209981571, 0.333333333333333 }, Flags = { StepOut = true } },
+						[8.05770209981571] = { 1, LH = { 6.39103543314904, 1 }, RH = { 8.05770209981571, 0.666666666666667 }, Flags = { StepOut = true } },
+						[13.0577020998157] = { 0, LH = { 11.391035433149, 0 }, RH = { 13.0577020998157, 0.333333333333333 }, Flags = { StepOut = true } },
+						[18.0577020998157] = { 1, LH = { 16.391035433149, 1 }, Flags = { StepOut = true } }
+					}
+				},
+				Follower1Opacity2 = BezierSpline {
+					SplineColor = { Red = 244, Green = 28, Blue = 244 },
+					CtrlWZoom = false,
+					KeyFrames = {
+						[0] = { 0, RH = { 0, 0.333333333333333 }, Flags = { StepOut = true } },
+						[5] = { 1, LH = { 3.33333333333333, 1 }, RH = { 5, 0.666666666666667 }, Flags = { StepOut = true } },
+						[10] = { 0, LH = { 8.33333333333333, 0 }, RH = { 10, 0.333333333333333 }, Flags = { StepOut = true } },
+						[15] = { 1, LH = { 13.3333333333333, 1 }, Flags = { StepOut = true } }
+					}
+				},
+				Glow1 = Glow {
+					Inputs = {
+						Blend = Input { Value = 0.2, },
+						Filter = Input { Value = FuID { "Fast Gaussian" }, },
+						Input = Input {
+							SourceOp = "Text1",
+							Source = "Output",
+						}
+					},
+					ViewInfo = OperatorInfo { Pos = { 126, 2.51521 } },
+				},
+				Glow1_1 = Glow {
+					Inputs = {
+						Blend = Input { Value = 0.1, },
+						Filter = Input { Value = FuID { "Fast Gaussian" }, },
+						XGlowSize = Input { Value = 200, },
+						Input = Input {
+							SourceOp = "Glow1",
+							Source = "Output",
+						}
+					},
+					ViewInfo = OperatorInfo { Pos = { 126.666, 43.7274 } },
+				},
+				Glow1_1_1 = Glow {
+					CtrlWZoom = false,
+					Inputs = {
+						Blend = Input { Value = 0.1, },
+						Filter = Input { Value = FuID { "Fast Gaussian" }, },
+						XGlowSize = Input { Value = 1000, },
+						Input = Input {
+							SourceOp = "Glow1_1",
+							Source = "Output",
+						}
+					},
+					ViewInfo = OperatorInfo { Pos = { 128.667, 86.1517 } },
+				}
+			},
+		}
+	},
+	ActiveTool = "VortyXFlicker"
+}

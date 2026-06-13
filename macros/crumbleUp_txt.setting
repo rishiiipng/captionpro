@@ -1,0 +1,318 @@
+{
+	Tools = ordered() {
+		VortyXcrumbleUp_txt = GroupOperator {
+			Inputs = ordered() {
+				Input1 = InstanceInput {
+					SourceOp = "Template",
+					Source = "StyledText",
+				},
+				Input2 = InstanceInput {
+					SourceOp = "Template",
+					Source = "Font",
+					ControlGroup = 2,
+				},
+				Input3 = InstanceInput {
+					SourceOp = "Template",
+					Source = "Style",
+					ControlGroup = 2,
+				},
+				Input4 = InstanceInput {
+					SourceOp = "Template",
+					Source = "Size",
+					Default = 0.09,
+				},
+				Input5 = InstanceInput {
+					SourceOp = "Template",
+					Source = "ShadingElements",
+					Default = 1,
+				},
+				Input6 = InstanceInput {
+					SourceOp = "Template",
+					Source = "SelectElement",
+				},
+				Input7 = InstanceInput {
+					SourceOp = "Template",
+					Source = "Select",
+				},
+				Input8 = InstanceInput {
+					SourceOp = "Template",
+					Source = "Name1",
+					Name = "Name",
+					DefaultText = "White Solid Fill",
+				},
+				Input9 = InstanceInput {
+					SourceOp = "Template",
+					Source = "Enabled1",
+					Name = "Enabled",
+					Default = 1,
+				},
+				Input10 = InstanceInput {
+					SourceOp = "Template",
+					Source = "Name2",
+					Name = "Name",
+					DefaultText = "Red Outline",
+				},
+				Input11 = InstanceInput {
+					SourceOp = "Template",
+					Source = "Enabled2",
+					Name = "Enabled",
+					Default = 0,
+				},
+				Input12 = InstanceInput {
+					SourceOp = "Template",
+					Source = "Name3",
+					Name = "Name",
+					DefaultText = "Black Shadow",
+				},
+				Input13 = InstanceInput {
+					SourceOp = "Template",
+					Source = "Enabled3",
+					Name = "Enabled",
+					Default = 0,
+				},
+				Input14 = InstanceInput {
+					SourceOp = "Template",
+					Source = "Name4",
+					Name = "Name",
+					DefaultText = "Blue Border",
+				},
+				Input15 = InstanceInput {
+					SourceOp = "Template",
+					Source = "Enabled4",
+					Name = "Enabled",
+					Default = 0,
+				},
+				Input16 = InstanceInput {
+					SourceOp = "Template",
+					Source = "Name5",
+					Name = "Name",
+					DefaultText = "Element 5",
+				},
+				Input17 = InstanceInput {
+					SourceOp = "Template",
+					Source = "Enabled5",
+					Name = "Enabled",
+					Default = 0,
+				},
+				Input18 = InstanceInput {
+					SourceOp = "Template",
+					Source = "Name6",
+					Name = "Name",
+					DefaultText = "Element 6",
+				},
+				Input19 = InstanceInput {
+					SourceOp = "Template",
+					Source = "Enabled6",
+					Name = "Enabled",
+					Default = 0,
+				},
+				Input20 = InstanceInput {
+					SourceOp = "Template",
+					Source = "Opacity1",
+					Name = "Opacity",
+					Default = 1,
+				}
+			},
+			Outputs = {
+				Output1 = InstanceOutput {
+					SourceOp = "Path2",
+					Source = "Heading",
+				},
+				Output2 = InstanceOutput {
+					SourceOp = "Path1",
+					Source = "Heading",
+				},
+				MainOutput1 = InstanceOutput {
+					SourceOp = "DropShadow1",
+					Source = "Output",
+				}
+			},
+			ViewInfo = GroupInfo { Pos = { 0, 0 } },
+			Tools = ordered() {
+				Template = TextPlus {
+					Inputs = {
+						MotionBlur = Input { Value = 1, },
+						Quality = Input { Value = 6, },
+						ShutterAngle = Input { Value = 280, },
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						Center = Input {
+							SourceOp = "Path2",
+							Source = "Position",
+						},
+						Opacity1 = Input {
+							SourceOp = "TemplateOpacity1",
+							Source = "Value",
+						},
+						StyledText = Input {
+							SourceOp = "Follower1",
+							Source = "StyledText",
+						},
+						Font = Input { Value = "SF Pro Display", },
+						Style = Input { Value = "Bold", },
+						Size = Input { Value = 0.09, },
+						VerticalJustificationNew = Input { Value = 3, },
+						HorizontalJustificationNew = Input { Value = 3, }
+					},
+					ViewInfo = OperatorInfo { Pos = { 306.739, 46.4348 } },
+				},
+				Path2 = PolyPath {
+					DrawMode = "InsertAndModify",
+					CtrlWZoom = false,
+					Inputs = {
+						Displacement = Input {
+							SourceOp = "Path2Displacement",
+							Source = "Value",
+						},
+						PolyLine = Input {
+							Value = Polyline {
+								Points = {
+									{ Linear = true, LockY = true, X = 0, Y = 0, RX = 0, RY = -0.183333333333333 },
+									{ Linear = true, LockY = true, X = 0, Y = -0.55, LX = 0, LY = 0.183333333333333 }
+								}
+							},
+						}
+					},
+				},
+				Path2Displacement = BezierSpline {
+					SplineColor = { Red = 255, Green = 0, Blue = 178 },
+					CtrlWZoom = false,
+					KeyFrames = {
+						[50] = { 0, RH = { 54.999995, 0.75 }, Flags = { Linear = true, LockedY = true } },
+						[65] = { 1, LH = { 60.000005, 1 }, Flags = { LockedY = true } }
+					}
+				},
+				TemplateOpacity1 = BezierSpline {
+					SplineColor = { Red = 244, Green = 28, Blue = 244 },
+					CtrlWZoom = false,
+					NameSet = true,
+					KeyFrames = {
+						[50] = { 1, RH = { 52.999997, 0 }, Flags = { Linear = true } },
+						[59] = { 0, LH = { 56.000003, 0 } }
+					}
+				},
+				Follower1 = StyledTextFollower {
+					CtrlWZoom = false,
+					Inputs = {
+						Order = Input { Value = 7, },
+						Delay = Input { Value = 1, },
+						Text = Input {
+							Value = StyledText {
+								Value = "Crumble Up"
+							},
+						},
+						CharacterOffset = Input {
+							SourceOp = "Path1",
+							Source = "Position",
+						},
+						TransformRotation = Input { Value = 1, },
+						CharacterAngleZ = Input {
+							SourceOp = "Follower1CharacterAngleZ",
+							Source = "Value",
+						},
+						Opacity1 = Input {
+							SourceOp = "Follower1Opacity1",
+							Source = "Value",
+						},
+						Softness1 = Input { Value = 1, },
+						Softness2 = Input { Value = 1, },
+						Softness3 = Input { Value = 1, },
+						Softness4 = Input { Value = 1, },
+						Softness5 = Input { Value = 1, },
+						Softness6 = Input { Value = 1, },
+						Softness7 = Input { Value = 1, },
+						Softness8 = Input { Value = 1, }
+					},
+				},
+				Path1 = PolyPath {
+					DrawMode = "InsertAndModify",
+					CtrlWZoom = false,
+					Inputs = {
+						Displacement = Input {
+							SourceOp = "Path1Displacement",
+							Source = "Value",
+						},
+						PolyLine = Input {
+							Value = Polyline {
+								Points = {
+									{ Linear = true, LockY = true, X = -0.5, Y = -0.63, RX = 0, RY = 0.0433333333333333 },
+									{ Linear = true, LockY = true, X = -0.5, Y = -0.5, LX = 0, LY = -0.0433333333333333 }
+								}
+							},
+						}
+					},
+				},
+				Path1Displacement = BezierSpline {
+					SplineColor = { Red = 255, Green = 0, Blue = 255 },
+					CtrlWZoom = false,
+					NameSet = true,
+					KeyFrames = {
+						[0] = { 0, RH = { 4.999995, 2 }, Flags = { LockedY = true } },
+						[15] = { 1, LH = { 10.000005, 1 }, Flags = { LockedY = true } }
+					}
+				},
+				Follower1CharacterAngleZ = BezierSpline {
+					SplineColor = { Red = 28, Green = 216, Blue = 243 },
+					CtrlWZoom = false,
+					NameSet = true,
+					KeyFrames = {
+						[0] = { -130, RH = { 4.999995, 130 }, Flags = { Linear = true } },
+						[15] = { 0, LH = { 10.000005, 0 } }
+					}
+				},
+				Follower1Opacity1 = BezierSpline {
+					SplineColor = { Red = 179, Green = 28, Blue = 244 },
+					CtrlWZoom = false,
+					NameSet = true,
+					KeyFrames = {
+						[0] = { 0, RH = { 0.2, 1 }, Flags = { Linear = true } },
+						[15] = { 1, LH = { 10, 1 } }
+					}
+				},
+				Glow1 = Glow {
+					Inputs = {
+						Blend = Input { Value = 0.244, },
+						Filter = Input { Value = FuID { "Fast Gaussian" }, },
+						XGlowSize = Input { Value = 22, },
+						Glow = Input { Value = 0.417, },
+						Input = Input {
+							SourceOp = "Template",
+							Source = "Output",
+						}
+					},
+					ViewInfo = OperatorInfo { Pos = { 437.172, 43.8635 } },
+				},
+				DropShadow1 = ofx.com.blackmagicdesign.resolvefx.DropShadow {
+					CtrlWZoom = false,
+					Inputs = {
+						Source = Input {
+							SourceOp = "Glow1",
+							Source = "Output",
+						},
+						shadowStrength = Input { Value = 0.5, },
+						shadowAngle = Input { Value = 37.5, },
+						ShadowDistance = Input { Value = 0.0500000007450581, },
+						shadowBlur = Input { Value = 0.409, },
+						shadowColorRed = Input { Value = 0, },
+						shadowColorGreen = Input { Value = 0, },
+						shadowColorBlue = Input { Value = 0, },
+						isLegacyComp = Input { Value = 0, },
+						blendGroup = Input { Value = 0, },
+						blendIn = Input { Value = 1, },
+						blend = Input { Value = 0, },
+						ignoreContentShape = Input { Value = 0, },
+						legacyIsProcessRGBOnly = Input { Value = 0, },
+						IsNoTemporalFramesReqd = Input { Value = 0, },
+						refreshTrigger = Input { Value = 1, },
+						srcProcessingAlphaMode = Input { Value = 2, },
+						dstProcessingAlphaMode = Input { Value = 2, },
+						resolvefxVersion = Input { Value = "2.0", }
+					},
+					ViewInfo = OperatorInfo { Pos = { 547.172, 43.8635 } },
+				}
+			},
+		}
+	},
+	ActiveTool = "VortyXcrumbleUp_txt"
+}

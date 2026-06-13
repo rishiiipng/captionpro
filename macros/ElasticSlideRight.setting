@@ -1,0 +1,168 @@
+{
+	Tools = ordered() {
+		VortyXElasticSlideRight = GroupOperator {
+			Outputs = {
+				Output1 = InstanceOutput {
+					SourceOp = "Path1",
+					Source = "Heading",
+				},
+				MainOutput1 = InstanceOutput {
+					SourceOp = "Glow1",
+					Source = "Output",
+				}
+			},
+			ViewInfo = GroupInfo { Pos = { 0, 0 } },
+			Tools = ordered() {
+				EdgeDetect1 = ofx.com.blackmagicdesign.resolvefx.EdgeDetect {
+					Inputs = {
+						Source = Input {
+							SourceOp = "Template",
+							Source = "Output",
+						},
+						EdgeDetectMode = Input { Value = FuID { "EDGE_DETECT_MODE_RGB" }, },
+						RGBColorRed = Input { Value = 1, },
+						RGBColorGreen = Input { Value = 1, },
+						RGBColorBlue = Input { Value = 1, },
+						detectionGroup = Input { Value = 1, },
+						EdgeThreshold = Input { Value = 0, },
+						EdgeSmooth = Input { Value = 0.100000001490116, },
+						edgeWidth = Input { Value = 0.063, },
+						Brightness = Input { Value = 0.827, },
+						edgeGamma = Input { Value = 1.161, },
+						DenoiseType = Input { Value = FuID { "DENOISE_TYPE_GAUSSIAN_BLUR" }, },
+						DenoiseStrength = Input { Value = 0.200000002980232, },
+						EdgeBlur = Input { Value = 0, },
+						EdgeOverlay = Input { Value = 1, },
+						filterGroup = Input { Value = 0, },
+						filterType = Input { Value = FuID { "FilterTypeNone" }, },
+						filterScale = Input { Value = 0.25, },
+						filterWater = Input { Value = 0.5, },
+						suppression = Input { Value = FuID { "SuppressionNone" }, },
+						halfEdgeGain = Input { Value = 10, },
+						advancedGroup = Input { Value = 0, },
+						autoGain = Input { Value = 0, },
+						isClamp = Input { Value = 1, },
+						BlendAmount = Input { Value = 0, },
+						isLegacy = Input { Value = 0, },
+						blendGroup = Input { Value = 0, },
+						blendIn = Input { Value = 1, },
+						blend = Input { Value = 0, },
+						ignoreContentShape = Input { Value = 0, },
+						legacyIsProcessRGBOnly = Input { Value = 0, },
+						IsNoTemporalFramesReqd = Input { Value = 0, },
+						refreshTrigger = Input { Value = 1, },
+						srcProcessingAlphaMode = Input { Value = -1, },
+						dstProcessingAlphaMode = Input { Value = -1, },
+						resolvefxVersion = Input { Value = "2.0", }
+					},
+					ViewInfo = OperatorInfo { Pos = { 470.667, -49.6215 } },
+				},
+				Template = TextPlus {
+					Inputs = {
+						MotionBlur = Input { Value = 1, },
+						Quality = Input { Value = 10, },
+						ShutterAngle = Input { Value = 360, },
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						ShadingGradient1 = Input {
+							Value = Gradient {
+								Colors = {
+									[0] = { 0.0196078431372549, 0.0431372549019608, 0.129411764705882, 1 },
+									[1] = { 0.698039215686274, 0.686274509803922, 1, 1 }
+								}
+							},
+						},
+						StyledText = Input {
+							SourceOp = "Follower1",
+							Source = "StyledText",
+						},
+						Font = Input { Value = "SF Pro Display", },
+						Style = Input { Value = "Bold", },
+						Size = Input { Value = 0.09, },
+						VerticalJustificationNew = Input { Value = 3, },
+						HorizontalJustificationNew = Input { Value = 3, }
+					},
+					ViewInfo = OperatorInfo { Pos = { 470.667, -82.6215 } },
+				},
+				Follower1 = StyledTextFollower {
+					CtrlWZoom = false,
+					Inputs = {
+						Order = Input { Value = 7, },
+						Delay = Input { Value = 0.8, },
+						Text = Input {
+							Value = StyledText {
+								Value = "Elastic SlideRight"
+							},
+						},
+						TransformRotation = Input { Value = 1, },
+						Opacity1 = Input {
+							SourceOp = "Follower1Opacity1",
+							Source = "Value",
+						},
+						Offset1 = Input {
+							SourceOp = "Path1",
+							Source = "Position",
+						},
+						Softness2 = Input { Value = 1, },
+						Softness3 = Input { Value = 1, },
+						Softness4 = Input { Value = 1, },
+						Softness5 = Input { Value = 1, },
+						Softness6 = Input { Value = 1, },
+						Softness7 = Input { Value = 1, },
+						Softness8 = Input { Value = 1, }
+					},
+				},
+				Follower1Opacity1 = BezierSpline {
+					SplineColor = { Red = 179, Green = 28, Blue = 244 },
+					CtrlWZoom = false,
+					KeyFrames = {
+						[0] = { 0, RH = { 5, 0.333333333333333 }, Flags = { Linear = true } },
+						[15] = { 1, LH = { 10, 0.666666666666667 }, Flags = { Linear = true } }
+					}
+				},
+				Path1 = PolyPath {
+					DrawMode = "InsertAndModify",
+					CtrlWZoom = false,
+					Inputs = {
+						Displacement = Input {
+							SourceOp = "Path1Displacement",
+							Source = "Value",
+						},
+						PolyLine = Input {
+							Value = Polyline {
+								Points = {
+									{ Linear = true, LockY = true, X = -5.213, Y = -0.5, RX = 1.571, RY = 0 },
+									{ Linear = true, LockY = true, X = -0.5, Y = -0.5, LX = -1.571, LY = 0 }
+								}
+							},
+						}
+					},
+				},
+				Path1Displacement = BezierSpline {
+					SplineColor = { Red = 255, Green = 0, Blue = 255 },
+					CtrlWZoom = false,
+					KeyFrames = {
+						[0] = { 0, RH = { 4.999995, 2 }, Flags = { Linear = true, LockedY = true } },
+						[15] = { 1, LH = { 10.000005, 1 }, Flags = { LockedY = true } }
+					}
+				},
+				Glow1 = Glow {
+					CtrlWZoom = false,
+					Inputs = {
+						Blend = Input { Value = 0.2, },
+						Filter = Input { Value = FuID { "Fast Gaussian" }, },
+						XGlowSize = Input { Value = 25.2, },
+						Glow = Input { Value = 0.685, },
+						Input = Input {
+							SourceOp = "EdgeDetect1",
+							Source = "Output",
+						}
+					},
+					ViewInfo = OperatorInfo { Pos = { 464.001, -13.2578 } },
+				}
+			},
+		}
+	},
+	ActiveTool = "VortyXElasticSlideRight"
+}
