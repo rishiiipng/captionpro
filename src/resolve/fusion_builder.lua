@@ -141,25 +141,66 @@ local function apply_macro(comp, macro_path, text)
     local bmd_data = bmd.readfile(macro_path)
     if bmd_data then
       comp:Paste(bmd_data)
+
       local tool_name = (type(bmd_data) == "table" and bmd_data.ActiveTool)
                      or (parsed and parsed.Tools and next(parsed.Tools))
                      or "TextPlus1"
-      local tp = comp:FindTool(tool_name)
-      if not tp then
-        local all = comp:GetToolList(false) or {}
+
+      -- GetToolList returns ALL tools including those inside GroupOperators.
+      -- We must find the main/active tool by exact name so we wire the GROUP
+      -- to MediaOut, not an inner tool (which would bypass the animation).
+      local all = comp:GetToolList(false) or {}
+      local main_tool = comp:FindTool(tool_name)
+      if not main_tool then
         for _, t in pairs(all) do
-          local n = (t:GetAttrs() or {})["TOOLS_Name"] or ""
-          if not n:match("^MediaOut") and not n:match("^Output") then
-            tp = t; break
+          if (t:GetAttrs() or {})["TOOLS_Name"] == tool_name then
+            main_tool = t; break
           end
         end
       end
-      if tp then
-        tp:SetInput("StyledText", text)
-        wire_to_media_out(comp, tp)
+      -- Last resort: first non-MediaOut top-level candidate
+      if not main_tool then
+        for _, t in pairs(all) do
+          local n = (t:GetAttrs() or {})["TOOLS_Name"] or ""
+          if not n:match("^MediaOut") and not n:match("^Output") then
+            main_tool = t; break
+          end
+        end
+      end
+
+      if main_tool then
+        -- Wire the main tool (group or TextPlus) to MediaOut for output
+        wire_to_media_out(comp, main_tool)
+
+        -- Set the subtitle text. Search strategy:
+        --   1. StyledTextFollower.Text  — animated group macros (e.g. VortyxElasticSlideUp)
+        --      The Follower drives TextPlus.StyledText; setting it here updates all characters.
+        --   2. TextPlus.StyledText      — simple single-node macros
+        --   3. SetInput on main_tool    — plain TextPlus as active tool
+        local text_set = false
+        for _, t in pairs(all) do
+          local reg = (t:GetAttrs() or {})["TOOLS_RegID"] or ""
+          if reg == "StyledTextFollower" then
+            pcall(function() t:SetInput("Text", text) end)
+            text_set = true; break
+          end
+        end
+        if not text_set then
+          for _, t in pairs(all) do
+            local reg = (t:GetAttrs() or {})["TOOLS_RegID"] or ""
+            if reg == "TextPlus" then
+              pcall(function() t:SetInput("StyledText", text) end)
+              text_set = true; break
+            end
+          end
+        end
+        if not text_set then
+          pcall(function() main_tool:SetInput("StyledText", text) end)
+        end
+
         done = true
       else
-        log("WARN: paste succeeded but TextPlus not found — using fallback")
+        log("WARN: paste succeeded but no tool found — using fallback")
       end
     end
 
