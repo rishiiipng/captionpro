@@ -114,6 +114,14 @@ After installation, the bundled macros are at:
 
 Browse to any of these in the panel — or use your own Fusion macros.
 
+> **About the bundled macros:** These animation presets are **not all created by
+> us**. Several are made by or adapted from third-party Fusion macro creators in
+> the DaVinci Resolve community, and remain the property of their respective
+> authors. They are bundled here only for your convenience as a starting point.
+> The CaptionPro license (below) covers the **plugin software only** — it does
+> **not** apply to these macros. If you plan to use any of them in commercial or
+> published work, please check the original creator's terms.
+
 > **First-time use note:** CaptionPro installs the macro you pick as a Fusion
 > **Title template** the first time you select it. When that happens it asks you
 > to **restart DaVinci Resolve once**, then run CaptionPro again. This is a
@@ -197,6 +205,31 @@ CaptionPro_Lua/
   via `COMPN_GlobalEnd` matches the subtitle length inside the comp
 - The plugin inserts clips using Resolve's **INSERT/SPLICE** mode — any content
   on the target video track beyond the last subtitle will be shifted right
+
+---
+
+## License
+
+Copyright (c) 2026 Rishi.
+
+The **CaptionPro plugin software** (everything in this repository **except** the
+files in the `macros/` folder) is released under the
+**[PolyForm Noncommercial License 1.0.0](LICENSE)**.
+
+In plain terms, for the plugin software:
+
+- ✅ You may **use, modify, and share** it freely for any **non-commercial** purpose
+- ✅ You may build on it and redistribute your changes
+- ⚠️ You **must keep the copyright notice** with any copy you share (attribution)
+- ❌ You may **not sell it** or use it as part of a commercial product or service
+
+**The bundled animation macros in `macros/` are NOT covered by this license.**
+They are not all our own work — several belong to third-party Fusion macro
+creators and remain the property of their respective authors (see
+[Using the included macros](#using-the-included-macros)). They are provided only
+for convenience. Check the original creators' terms before any commercial use.
+
+For commercial use of the plugin, please get in touch: **deyayush599@gmail.com**
 
 ---
 
