@@ -1,21 +1,27 @@
 --[[
   fusion_builder.lua
-  Creates Fusion Text+ composition clips on the timeline to match subtitles.
+  Creates animated text clips on the timeline to match subtitles.
 
   Resolve 21 behaviour (confirmed via live probing):
-    • InsertFusionCompositionIntoTimeline() uses INSERT/SPLICE mode.
-      It cuts the clip at the playhead, inserts a fresh 120-frame comp,
-      and pushes the right portion forward — creating "pushed remnant" clips.
+    • comp:Paste() silently adds NOTHING inside embedded timeline Fusion comps —
+      direct table, clipboard, and unwrapped-group payloads all fail. Macros can
+      therefore NOT be applied after inserting an empty Fusion composition.
+    • The supported path is Timeline:InsertFusionTitleIntoTimeline(titleName),
+      which inserts a clip with the full macro (animation, modifiers, effects)
+      already inside. The macro .setting must live in Resolve's
+      Fusion\Templates\Edit\Titles folder, scanned at application startup.
+    • InsertFusion*IntoTimeline() uses INSERT/SPLICE mode: it cuts the clip at
+      the playhead, inserts a fresh 120-frame clip, and pushes the right portion
+      forward — creating "pushed remnant" clips.
     • resolve:OpenPage("edit") must be called once before the insert loop;
       repeated calls deselect the video track and cause nil returns.
-    • SetProperty("End"/"Duration") returns false — clips cannot be resized.
     • comp:SetAttrs({COMPN_GlobalEnd = n}) limits text visibility inside the
       clip even though the clip's timeline duration stays at 120 frames.
 
   Insertion strategy — 3 phases:
-    1. Insert all empty Fusion comps (no comp editing between inserts).
+    1. Insert all clips (Fusion Title when a macro is set, empty comp otherwise).
     2. Delete pushed remnants (clips starting at or after last_start + 120).
-    3. Re-fetch surviving clips, match by start_frame, then set text & style.
+    3. Re-fetch surviving clips, match by start_frame, set text & duration.
 ]]
 
 local M = {}
@@ -37,7 +43,7 @@ end
 function M.clear_log()
   local f = io.open(_log_path, "w")
   if f then
-    f:write("=== CaptionPro Lua run " .. os.date() .. " ===\n")
+    f:write("=== CaptionPro run " .. os.date() .. " ===\n")
     f:close()
   end
 end
@@ -72,38 +78,25 @@ local function wire_to_media_out(comp, tool)
   end
 end
 
--- ── Text-node creation ────────────────────────────────────────────────────────
-
-local function add_bare_text_node(comp, text)
-  comp:Lock()
-  local ok, err = pcall(function()
-    local t = comp:AddTool("TextPlus")
-    t:SetInput("StyledText", text)
-    wire_to_media_out(comp, t)
-  end)
-  comp:Unlock()
-  if not ok then error("add_bare_text_node: " .. tostring(err)) end
-end
+-- ── Macro .setting parsing (for the styled-text fallback path) ────────────────
 
 -- Parse a .setting file into a plain Lua table using a stub environment.
--- bmd.readfile() wraps the result in ordered()/typed tables that are hard to
--- iterate safely; io.open + loadstring with shim constructors gives clean tables.
 local function parse_setting(path)
   local f = io.open(path, "r")
   if not f then return nil end
   local src = f:read("*all")
   f:close()
 
-  -- pass(t) returns t if it's a table, otherwise returns a function that does.
-  -- This lets us stub ordered(), Input{}, TextPlus{}, etc. uniformly.
-  local pass = function(t)
-    if type(t) == "table" then return t end
-    return function(u) return type(u) == "table" and u or {} end
-  end
-  local env = setmetatable(
-    { ordered = function() return pass end, Input = pass },
-    { __index = function(_, _) return pass end }
-  )
+  -- Stub: a callable, self-indexing object so every constructor expression in
+  -- the file resolves — ordered(){...}, Input{...}, FuID{...}, and dotted names
+  -- like ofx.com.blackmagicdesign.resolvefx.EdgeDetect{...} (OFX plugin tools).
+  -- A plain function stub breaks on the dotted form: indexing a function errors.
+  local stub
+  stub = setmetatable({}, {
+    __index = function() return stub end,
+    __call  = function(_, t) return type(t) == "table" and t or stub end,
+  })
+  local env = setmetatable({}, { __index = function() return stub end })
 
   local chunk = loadstring and loadstring("return " .. src)
   if not chunk then return nil end
@@ -113,125 +106,139 @@ local function parse_setting(path)
 end
 
 -- Extract TextPlus style inputs from a parsed setting table.
+-- Recurses into GroupOperator inner Tools so complex macros yield at least
+-- Font/Size/Style for the styled-text fallback path. Only extracts from tools
+-- that have a Font input (TextPlus signature); skips table-valued inputs
+-- (Gradient, FuID, animated SourceOp refs) that can't be set via SetInput.
 local function extract_style(parsed)
   if not (parsed and parsed.Tools) then return {} end
   local style = {}
-  for _, td in pairs(parsed.Tools) do
-    if type(td) == "table" and td.Inputs then
-      for k, v in pairs(td.Inputs) do
-        if type(v) == "table" and k ~= "StyledText" and v.Value ~= nil then
-          style[k] = v.Value
+  local function scan(tools)
+    if type(tools) ~= "table" then return false end
+    for _, td in pairs(tools) do
+      if type(td) == "table" then
+        if td.Inputs and td.Inputs.Font then
+          for k, v in pairs(td.Inputs) do
+            if type(v) == "table" and k ~= "StyledText"
+               and v.Value ~= nil and type(v.Value) ~= "table" then
+              style[k] = v.Value
+            end
+          end
+          return true
+        elseif td.Tools then
+          if scan(td.Tools) then return true end
         end
       end
-      break
     end
+    return false
   end
+  scan(parsed.Tools)
   return style
 end
 
---- Apply a .setting macro to a Fusion composition, then set the subtitle text.
-local function apply_macro(comp, macro_path, text)
-  local parsed = parse_setting(macro_path)
-  local style  = extract_style(parsed)
+-- ── Text helpers ──────────────────────────────────────────────────────────────
 
+local function add_bare_text_node(comp, text, style)
   comp:Lock()
   local ok, err = pcall(function()
-    local done = false
-
-    local bmd_data = bmd.readfile(macro_path)
-    if bmd_data then
-      comp:Paste(bmd_data)
-
-      local tool_name = (type(bmd_data) == "table" and bmd_data.ActiveTool)
-                     or (parsed and parsed.Tools and next(parsed.Tools))
-                     or "TextPlus1"
-
-      -- GetToolList returns ALL tools including those inside GroupOperators.
-      -- We must find the main/active tool by exact name so we wire the GROUP
-      -- to MediaOut, not an inner tool (which would bypass the animation).
-      local all = comp:GetToolList(false) or {}
-      local main_tool = comp:FindTool(tool_name)
-      if not main_tool then
-        for _, t in pairs(all) do
-          if (t:GetAttrs() or {})["TOOLS_Name"] == tool_name then
-            main_tool = t; break
-          end
-        end
-      end
-      -- Last resort: first non-MediaOut top-level candidate
-      if not main_tool then
-        for _, t in pairs(all) do
-          local n = (t:GetAttrs() or {})["TOOLS_Name"] or ""
-          if not n:match("^MediaOut") and not n:match("^Output") then
-            main_tool = t; break
-          end
-        end
-      end
-
-      if main_tool then
-        -- Wire the main tool (group or TextPlus) to MediaOut for output
-        wire_to_media_out(comp, main_tool)
-
-        -- Set the subtitle text. Search strategy:
-        --   1. StyledTextFollower.Text  — animated group macros (e.g. VortyxElasticSlideUp)
-        --      The Follower drives TextPlus.StyledText; setting it here updates all characters.
-        --   2. TextPlus.StyledText      — simple single-node macros
-        --   3. SetInput on main_tool    — plain TextPlus as active tool
-        local text_set = false
-        for _, t in pairs(all) do
-          local reg = (t:GetAttrs() or {})["TOOLS_RegID"] or ""
-          if reg == "StyledTextFollower" then
-            pcall(function() t:SetInput("Text", text) end)
-            text_set = true; break
-          end
-        end
-        if not text_set then
-          for _, t in pairs(all) do
-            local reg = (t:GetAttrs() or {})["TOOLS_RegID"] or ""
-            if reg == "TextPlus" then
-              pcall(function() t:SetInput("StyledText", text) end)
-              text_set = true; break
-            end
-          end
-        end
-        if not text_set then
-          pcall(function() main_tool:SetInput("StyledText", text) end)
-        end
-
-        done = true
-      else
-        log("WARN: paste succeeded but no tool found — using fallback")
-      end
-    end
-
-    if not done then
-      local t = comp:AddTool("TextPlus")
+    local t = comp:AddTool("TextPlus")
+    if style then
       for k, v in pairs(style) do
         pcall(function() t:SetInput(k, v) end)
       end
-      t:SetInput("StyledText", text)
-      wire_to_media_out(comp, t)
     end
+    t:SetInput("StyledText", text)
+    wire_to_media_out(comp, t)
   end)
   comp:Unlock()
-  if not ok then error("apply_macro: " .. tostring(err)) end
+  if not ok then error("add_bare_text_node: " .. tostring(err)) end
+end
+
+-- Set the subtitle text inside a title clip's comp.
+--   1. StyledTextFollower.Text — animated macros; the Follower drives
+--      TextPlus.StyledText, so setting it updates the per-character animation.
+--   2. TextPlus.StyledText     — simple macros.
+-- Returns how the text was set, or nil if no text tool was found.
+local function set_text_on_comp(comp, text)
+  local all = comp:GetToolList(false) or {}
+  for _, t in pairs(all) do
+    if (t:GetAttrs() or {})["TOOLS_RegID"] == "StyledTextFollower" then
+      pcall(function() t:SetInput("Text", text) end)
+      return "follower"
+    end
+  end
+  for _, t in pairs(all) do
+    if (t:GetAttrs() or {})["TOOLS_RegID"] == "TextPlus" then
+      pcall(function() t:SetInput("StyledText", text) end)
+      return "textplus"
+    end
+  end
+  return nil
+end
+
+-- ── Title template installation ───────────────────────────────────────────────
+
+local function titles_dir()
+  local appdata = os.getenv("APPDATA")
+  if not appdata then return nil end
+  return appdata .. "\\Blackmagic Design\\DaVinci Resolve\\Support" ..
+         "\\Fusion\\Templates\\Edit\\Titles"
+end
+
+--- Ensure a macro .setting is installed as a Fusion Title template.
+-- Resolve scans the Titles folder at startup, so a freshly installed macro
+-- needs a restart before InsertFusionTitleIntoTimeline can find it.
+-- @return title_name, installed_now(bool), err
+function M.ensure_title_installed(macro_path)
+  local name = (macro_path:match("[^\\/]+$") or ""):gsub("%.setting$", "")
+  if name == "" then return nil, false, "Invalid macro path: " .. tostring(macro_path) end
+
+  local dir = titles_dir()
+  if not dir then return nil, false, "APPDATA environment variable not set." end
+  local dst = dir .. "\\" .. name .. ".setting"
+
+  local sf = io.open(macro_path, "rb")
+  if not sf then return nil, false, "Cannot read macro file: " .. macro_path end
+  local src_data = sf:read("*all")
+  sf:close()
+
+  local df = io.open(dst, "rb")
+  if df then
+    local dst_data = df:read("*all")
+    df:close()
+    if dst_data == src_data then
+      return name, false, nil  -- already installed, identical content
+    end
+  end
+
+  os.execute('cmd /c if not exist "' .. dir .. '" mkdir "' .. dir .. '"')
+  local of = io.open(dst, "wb")
+  if not of then return nil, false, "Cannot write title template: " .. dst end
+  of:write(src_data)
+  of:close()
+  log("installed title template: " .. dst)
+  return name, true, nil
 end
 
 -- ── Public API ────────────────────────────────────────────────────────────────
 
---- Convert subtitle clips to Fusion composition clips on the timeline.
+--- Convert subtitle clips to animated text clips on the timeline.
 -- @param timeline           Resolve timeline object
 -- @param subtitles          array of { text, start_frame, end_frame }
 -- @param target_video_track integer (1-based)
 -- @param opts               table:
---   macro_path_primary    path for highlight lines  (nil = bare text)
---   macro_path_secondary  path for normal lines     (nil = bare text)
+--   title_primary         Fusion Title name for highlight lines (nil = no macro)
+--   title_secondary       Fusion Title name for normal lines    (nil = no macro)
+--   macro_path_primary    original .setting path (style fallback if title fails)
+--   macro_path_secondary  original .setting path (style fallback if title fails)
 --   highlight_indices     array of 1-based indices that are highlights
 function M.subtitles_to_fusion_clips(timeline, subtitles, target_video_track, opts)
   opts = opts or {}
-  local macro_p  = opts.macro_path_primary
-  local macro_s  = opts.macro_path_secondary
-  local hi_list  = opts.highlight_indices or {}
+  local title_p = opts.title_primary
+  local title_s = opts.title_secondary
+  local macro_p = opts.macro_path_primary
+  local macro_s = opts.macro_path_secondary
+  local hi_list = opts.highlight_indices or {}
   target_video_track = target_video_track or 1
 
   if #subtitles == 0 then return end
@@ -242,23 +249,46 @@ function M.subtitles_to_fusion_clips(timeline, subtitles, target_video_track, op
   local hi_set = {}
   for _, idx in ipairs(hi_list) do hi_set[idx] = true end
 
-  -- ── Phase 1: insert all empty comps ────────────────────────────────────────
+  -- ── Phase 1: insert all clips ───────────────────────────────────────────────
   -- One resolve:OpenPage("edit") before the loop; never inside it.
   if resolve then resolve:OpenPage("edit") end
 
-  log(string.format("Phase 1: inserting %d clips  (video track %d)",
-      #subtitles, target_video_track))
+  log(string.format("Phase 1: inserting %d clips  (video track %d)  title_p=%s  title_s=%s",
+      #subtitles, target_video_track,
+      tostring(title_p or "none"), tostring(title_s or "none")))
 
-  for _, sub in ipairs(subtitles) do
+  local inserted_kind = {}   -- per index: "title" or "comp"
+  local title_failed  = {}   -- title name -> true once insert failed
+
+  for i, sub in ipairs(subtitles) do
     local tc = frame_to_tc(sub.start_frame, fps)
     timeline:SetCurrentTimecode(tc)
-    local clip = timeline:InsertFusionCompositionIntoTimeline()
-    if not clip then
-      error(string.format(
-        "InsertFusionCompositionIntoTimeline() returned nil at %s.\n"
-        .. "Ensure a video track is selected (highlighted) in the Edit page "
-        .. "and that it is not locked before running CaptionPro.",
-        tc))
+
+    local clip  = nil
+    local title = hi_set[i] and title_p or title_s
+
+    if title and not title_failed[title] then
+      clip = timeline:InsertFusionTitleIntoTimeline(title)
+      if not clip then
+        title_failed[title] = true
+        log("WARN: InsertFusionTitle('" .. title .. "') returned nil — " ..
+            "falling back to styled Text+. If this macro was just installed, " ..
+            "RESTART DaVinci Resolve to make the title available.")
+      end
+    end
+
+    if clip then
+      inserted_kind[i] = "title"
+    else
+      clip = timeline:InsertFusionCompositionIntoTimeline()
+      if not clip then
+        error(string.format(
+          "InsertFusionCompositionIntoTimeline() returned nil at %s.\n"
+          .. "Ensure a video track is selected (highlighted) in the Edit page "
+          .. "and that it is not locked before running CaptionPro.",
+          tc))
+      end
+      inserted_kind[i] = "comp"
     end
   end
 
@@ -281,26 +311,33 @@ function M.subtitles_to_fusion_clips(timeline, subtitles, target_video_track, op
     timeline:DeleteClips(remnants)
   end
 
-  -- ── Phase 3: match survivors → assign text ─────────────────────────────────
-  log(string.format("Phase 3: %d clips  highlights=%d  macro_p=%s  macro_s=%s",
-      #subtitles, #hi_list,
-      macro_p and macro_p:match("[^\\/]+$") or "none",
-      macro_s and macro_s:match("[^\\/]+$") or "none"))
+  -- ── Phase 3: match survivors → set text & duration ─────────────────────────
+  log(string.format("Phase 3: %d clips  highlights=%d", #subtitles, #hi_list))
+
   local final_clips = timeline:GetItemListInTrack("video", target_video_track) or {}
   local by_start    = {}
   for _, c in ipairs(final_clips) do
     by_start[c:GetStart()] = c
   end
 
+  -- Lazy style extraction for the fallback path (one parse per macro file)
+  local style_cache = {}
+  local function style_for(path)
+    if not path then return nil end
+    if style_cache[path] == nil then
+      style_cache[path] = extract_style(parse_setting(path)) or {}
+    end
+    return style_cache[path]
+  end
+
   for i, sub in ipairs(subtitles) do
     local clip = by_start[sub.start_frame]
     if not clip then
-      -- Build available-frames list for the error message
       local avail = {}
       for k in pairs(by_start) do table.insert(avail, tostring(k)) end
       table.sort(avail)
       error(string.format(
-        "No Fusion clip at frame %d (%s) after cleanup.\nAvailable: [%s]",
+        "No clip at frame %d (%s) after cleanup.\nAvailable: [%s]",
         sub.start_frame, frame_to_tc(sub.start_frame, fps),
         table.concat(avail, ", ")))
     end
@@ -313,17 +350,29 @@ function M.subtitles_to_fusion_clips(timeline, subtitles, target_video_track, op
     local dur = sub.end_frame - sub.start_frame
     comp:SetAttrs({ COMPN_GlobalEnd = dur - 1, COMPN_RenderEnd = dur - 1 })
 
-    local macro = hi_set[i] and macro_p or macro_s
-    if macro and macro ~= "" then
-      apply_macro(comp, macro, sub.text)
+    local how
+    if inserted_kind[i] == "title" then
+      how = set_text_on_comp(comp, sub.text)
+      if not how then
+        -- Diagnostic dump: which tools does a title clip's comp actually contain?
+        local names = {}
+        for _, t in pairs(comp:GetToolList(false) or {}) do
+          local a = t:GetAttrs() or {}
+          table.insert(names, (a["TOOLS_Name"] or "?") .. "(" .. (a["TOOLS_RegID"] or "?") .. ")")
+        end
+        log("  WARN no text tool found in title comp; tools: " .. table.concat(names, "  "))
+        how = "none"
+      end
     else
-      add_bare_text_node(comp, sub.text)
+      local mpath = hi_set[i] and macro_p or macro_s
+      add_bare_text_node(comp, sub.text, style_for(mpath))
+      how = mpath and "styled" or "bare"
     end
 
-    log(string.format("  [%d] frame=%-7d  %s  %s",
+    log(string.format("  [%d] frame=%-7d  %s  %s  %s",
         i, sub.start_frame,
         hi_set[i] and "HI    " or "normal",
-        sub.text:sub(1, 50)))
+        how, sub.text:sub(1, 50)))
   end
 end
 

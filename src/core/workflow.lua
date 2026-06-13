@@ -60,26 +60,60 @@ function M.run(config, progress_cb)
     prog(55, "Highlight detection skipped.")
   end
 
-  -- ── Step 3: build Fusion clips ──────────────────────────────────────────
-  prog(60, string.format("Inserting %d Fusion clip(s)…", #subtitles))
-
+  -- ── Step 3: install macros as Fusion Title templates ────────────────────
+  -- comp:Paste() does not work in embedded timeline comps (Resolve limitation),
+  -- so macros are inserted via InsertFusionTitleIntoTimeline. The .setting
+  -- must be in Resolve's Titles templates folder, scanned at startup — a
+  -- freshly installed macro therefore requires a restart before first use.
   local macro_p = config.use_macros and config.macro_path_primary  or nil
   local macro_s = config.use_macros and config.macro_path_secondary or nil
+
+  local title_p, title_s = nil, nil
+  local newly_installed = {}
+
+  if macro_p then
+    local name, fresh, terr = fusion_builder.ensure_title_installed(macro_p)
+    if terr then error(terr) end
+    title_p = name
+    if fresh then table.insert(newly_installed, name) end
+  end
+  if macro_s then
+    if macro_s == macro_p then
+      title_s = title_p
+    else
+      local name, fresh, terr = fusion_builder.ensure_title_installed(macro_s)
+      if terr then error(terr) end
+      title_s = name
+      if fresh then table.insert(newly_installed, name) end
+    end
+  end
+
+  if #newly_installed > 0 then
+    prog(100, "Macro(s) installed as Fusion Title templates: "
+        .. table.concat(newly_installed, ", ")
+        .. ".  RESTART DaVinci Resolve, then run CaptionPro again.")
+    return { status = "restart_required", titles = newly_installed }
+  end
+
+  -- ── Step 4: build clips ──────────────────────────────────────────────────
+  prog(60, string.format("Inserting %d clip(s)…", #subtitles))
 
   fusion_builder.subtitles_to_fusion_clips(
     timeline,
     subtitles,
     config.target_video_track or 1,
     {
+      title_primary        = title_p,
+      title_secondary      = title_s,
       macro_path_primary   = macro_p,
       macro_path_secondary = macro_s,
       highlight_indices    = highlight_indices,
     }
   )
 
-  prog(95, "All Fusion clips created.")
+  prog(95, "All clips created.")
 
-  -- ── Step 4: optional subtitle-track cleanup ─────────────────────────────
+  -- ── Step 5: optional subtitle-track cleanup ─────────────────────────────
   if config.delete_subtitle_track then
     prog(95, "Deleting subtitle track…")
     local track_idx = config.subtitle_track_index or 1
